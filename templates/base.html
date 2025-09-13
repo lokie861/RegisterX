@@ -1,0 +1,32 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PLC Modbus Converter</title>
+  <link rel="icon" href="{{ url_for('static', filename='logo.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <script>
+    function copyToClipboard(textId) {
+      let text = document.getElementById(textId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied: " + text);
+      });
+    }
+  </script>
+</head>
+<body>
+  <nav class="navbar">
+    <img src="{{ url_for('static', filename='logo.ico') }}" class="logo" alt="Logo">
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('convert.convert_page') }}">Convert</a>
+    <a href="{{ url_for('about') }}">About</a>  <!-- NEW -->
+  </nav>
+  
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+  <footer class="footer">
+    <p>&copy; {{ 2025 }} PLC Modbus Converter | Built with Flask</p>
+  </footer>
+</body>
+</html>

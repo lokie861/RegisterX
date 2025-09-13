@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="about-container">
+  <h1>About</h1>
+  <p><strong>Developer:</strong> Lokesh</p>
+  <p><strong>Email: </strong> 
+    <a href="mailto:plokesh23.01@gmail.com">plokesh23.01@gmail.com</a>
+  </p>
+  <p><strong>GitHub: </strong> 
+    <a href="https://github.com/lokie861" target="_blank">https://github.com/lokie861</a>
+  </p>
+  
+  <h2>Report a Bug</h2>
+  <form id="bugForm" onsubmit="return sendBugReport(event)">
+    <textarea id="bugReport" rows="4" cols="50" placeholder="Describe the bug here..." required></textarea>
+    <br>
+    <button type="submit">Submit Bug Report</button>
+  </form>
+</div>
+
+<script>
+  function sendBugReport(event) {
+    event.preventDefault();
+
+    let bugText = document.getElementById("bugReport").value;
+    let email = "plokesh23.01@gmail.com";
+    let subject = "Bug Report - PLC Modbus Converter";
+    let body = encodeURIComponent(bugText);
+
+    // Gmail compose link
+    let gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodeURIComponent(subject)}&body=${body}`;
+
+    // Open in new browser tab
+    window.open(gmailLink, "_blank");
+    return false;
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+  <h1>Welcome to PLC Modbus Converter</h1>
+  <p>A simple tool to convert PLC register addresses into Modbus format quickly and accurately.</p>
+  <a href="{{ url_for('convert.convert_page') }}" class="btn-primary">
+    <i class="fas fa-play"></i> Start Converting
+  </a>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+  <h2><i class="fas fa-star"></i> Features</h2>
+  <ul>
+    <li><i class="fas fa-bolt"></i> Instant register to Modbus conversion</li>
+    <li><i class="fas fa-database"></i> Supports multiple PLC types</li>
+    <li><i class="fas fa-copy"></i> One-click copy to clipboard</li>
+    <li><i class="fas fa-bug"></i> Easy bug reporting</li>
+  </ul>
+</section>
+
+<!-- Quick Guide Section -->
+<section class="guide">
+  <h2><i class="fas fa-book"></i> How it Works</h2>
+  <ol>
+    <li>Select your PLC type from the dropdown.</li>
+    <li>Enter the register address (e.g., <code>M2401</code>).</li>
+    <li>Click <em>Convert</em> to see the Modbus mapping.</li>
+    <li>Copy results with one click.</li>
+  </ol>
+</section>
+
+<!-- Updates Section -->
+<section class="updates">
+  <h2><i class="fas fa-history"></i> Latest Updates</h2>
+  <ul>
+    <li><strong>v1.2</strong> – Added SX2 PLC support</li>
+    <li><strong>v1.1</strong> – New copy-to-clipboard UI</li>
+    <li><strong>v1.0</strong> – Initial release</li>
+  </ul>
+</section>
+
+<!-- About Section -->
+<section class="about">
+  <h2><i class="fas fa-user"></i> About This Project</h2>
+  <p>Built by <strong>Lokesh</strong> to simplify PLC register to Modbus conversions.</p>
+  <p>
+    Connect with me: 
+    <a href="mailto:plokesh23.01@gmail.com"><i class="fas fa-envelope"></i> Email</a> | 
+    <a href="https://github.com/your-github-username" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+  </p>
+</section>
+
+<style>
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+.hero h1 { font-size: 2rem; margin-bottom: .5rem; }
+.hero p { color: #555; margin-bottom: 1rem; }
+.btn-primary {
+  display: inline-block;
+  background: #007bff;
+  color: white;
+  padding: .6rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background .2s ease;
+}
+.btn-primary:hover { background: #0056b3; }
+
+/* Features */
+.features ul {
+  list-style: none;
+  padding: 0;
+}
+.features li {
+  margin: .5rem 0;
+  font-size: 1.1rem;
+}
+.features i { color: #007bff; margin-right: .5rem; }
+
+/* Guide */
+.guide ol {
+  padding-left: 1.2rem;
+  line-height: 1.6;
+}
+.guide code {
+  background: #f1f1f1;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* Updates */
+.updates ul {
+  padding-left: 1.2rem;
+  line-height: 1.6;
+}
+
+/* About */
+.about a {
+  margin: 0 .5rem;
+  color: #007bff;
+  text-decoration: none;
+}
+.about a:hover { text-decoration: underline; }
+</style>
+
+{% endblock %}
