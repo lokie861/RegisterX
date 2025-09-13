@@ -51,6 +51,7 @@ def load_app_settings(file_path: str) -> dict:
 
 
 APP_SETTINGS = load_app_settings(os.path.join(os.getcwd(),"app.ini"))
+CONFIG = APP_SETTINGS.get("CONFIG",{})
 
 ICON_PATH = os.path.join(BASE_PATH, "logo", "plc_to_modbus.ico")
 
@@ -89,7 +90,8 @@ def stop_app(icon, item):
 
 
 def open_app(icon, item):
-    webbrowser.open("http://127.0.0.1:5000/web")
+    host = "127.0.0.1" if CONFIG.get("host","127.0.0.1") == "0.0.0.0" else CONFIG.get("host","127.0.0.1")
+    webbrowser.open(f'http://{host}:{CONFIG.get("port",5000)}')
 
 
 # -----------------------------
@@ -136,13 +138,14 @@ def about():
 
 
 if __name__ == '__main__':
-    if APP_SETTINGS.get("CONFIG",{}).get("run_systray","true").lower() == "true":
+    print(CONFIG)
+    if CONFIG.get("run_systray",""):
         create_tray()
         print("Started systray...")
     else:
         print("Systray disabled in settings.")
 
-    app.run(host=APP_SETTINGS.get("host","0.0.0.0"),
-            port=APP_SETTINGS.get("port",5000),
-            debug=APP_SETTINGS.get("debug","false").lower() == "true"
+    app.run(host=CONFIG.get("host","0.0.0.0"),
+            port=CONFIG.get("port",5000),
+            debug=CONFIG.get("debug","false").lower() == "true"
     )

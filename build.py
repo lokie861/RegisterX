@@ -7,7 +7,7 @@ import shutil
 project_dir = os.getcwd()
 icon_path = os.path.join(project_dir, "logo\\plc_to_modbus.ico")
 entry_file = os.path.join(project_dir, "app.py")
-exe_name = "PLC Reg to Modbus Converter"
+exe_name = "RegisterX"
 exe_output_dir = os.path.join(os.getcwd(), "Builds","EXE")
 
 output_dir = os.path.join(project_dir, "Builds", "Installer")
@@ -16,7 +16,7 @@ iscc_path = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"  # Adjust path if ne
 
 def build_exe():
     command = (
-        f'pyinstaller --noconfirm --onefile --console '
+        f'pyinstaller --noconfirm --onefile --noconsole '
         f'--manifest elevated.manifest --distpath "{exe_output_dir}" '
         f'--name "{exe_name}" '
         f'--icon "{icon_path}" '
@@ -64,9 +64,9 @@ def build_installer():
 
 def clean_builds(type):
     if type == 'exe':
-        paths = ['Backend-Builds', 'dist', 'build']
+        paths = ['Builds\EXE', 'builds',"build"]
     elif type == 'installer':
-        paths = ['Builds']
+        paths = ['Builds\Installer']
     else:
         paths = []
 
