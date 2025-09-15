@@ -13,7 +13,11 @@
         <option value="{{ key }}">{{ key }}</option>
         {% endfor %}
       </select>
-      
+      <label for="reg_type"><i class="fas fa-cube"></i> Address Type:</label>
+      <select name="reg_type" id="reg_type" required>
+        <option value="bit">Bit</option>
+        <option value="word">Word</option>
+      </select>
       <label for="address"><i class="fas fa-keyboard"></i> Register Address:</label>
       <input type="text" id="address" name="address" placeholder="e.g. M2401" required>
 
@@ -41,8 +45,9 @@ document.getElementById("convertForm").addEventListener("submit", function(e) {
 
     let plc = document.getElementById("plc").value;
     let address = document.getElementById("address").value;
+    let reg_type = document.getElementById("reg_type").value;
 
-    fetch(`api/convert?plc=${encodeURIComponent(plc)}&address=${encodeURIComponent(address)}`)
+    fetch(`api/convert?plc=${encodeURIComponent(plc)}&address=${encodeURIComponent(address)}&regtype=${encodeURIComponent(reg_type)}`)
       .then(response => response.json())
       .then(data => {
           document.getElementById("raw").innerText = data.raw;

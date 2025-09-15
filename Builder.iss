@@ -30,10 +30,19 @@ Name: "{commondesktop}\RegisterX"; Filename: "{app}\RegisterX.exe"; Tasks: deskt
 ; Auto-start backend (adjust if separate backend.exe exists)
 Name: "{userstartup}\RegisterX"; Filename: "{app}\RegisterX.exe"
 
+
+[Registry]
+; Adds app to startup if the user selects the startup task
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
+ValueName: "RegisterX"; ValueType: string; ValueData: "{app}\RegisterX.exe"; Flags: uninsdeletevalue; Tasks: startup
+
 [Tasks]
 ; Extra tasks user can pick during install
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"
 
+Name: "startup"; Description: "Start RegisterX when Windows starts"; GroupDescription: "Startup options:"
+
 [Run]
 ; Optionally start the app after install
-Filename: "{app}\RegisterX.exe"; Description: "Launch RegisterX"; Flags: nowait skipifsilent postinstall
+Filename: "{app}\RegisterX.exe"; Description: "Launch RegisterX"; Flags: nowait postinstall skipifsilent
+
