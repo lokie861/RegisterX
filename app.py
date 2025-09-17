@@ -63,10 +63,10 @@ def run_tray():
     if icon is None:
         image = Image.open(ICON_PATH)
         menu = pystray.Menu(
-            pystray.MenuItem("Open Address Converter", open_app),
+            pystray.MenuItem("Open RegisterX", open_app),
             pystray.MenuItem("Exit", stop_app)
         )
-        icon = pystray.Icon("PLC to Modbus", image, "PLC to Modbus", menu)
+        icon = pystray.Icon("RegisterX", image, "RegisterX", menu)
         icon.run()
     try:
         while True:
@@ -115,7 +115,7 @@ def index():
 
 @app.route("/exit")
 def exit_app():
-    os._exit(0)
+    sys.exit(0)
 
 
 @app.route("/home")
