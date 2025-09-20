@@ -5,6 +5,8 @@ from threading import Thread
 import time
 import webbrowser
 import configparser
+import msvcrt
+import signal
 
 from PIL import Image
 from flask import Flask, redirect, render_template, request, url_for
@@ -19,6 +21,7 @@ BASE_PATH = None
 APP_SETTINGS = None
 ICON_PATH = None
 icon = None
+LOCK_FILE = "RegisterX.lock"
 
 # -----------------------------
 # Path setup
@@ -53,11 +56,20 @@ def load_app_settings(file_path: str) -> dict:
 APP_SETTINGS = load_app_settings(os.path.join(os.getcwd(),"app.ini"))
 CONFIG = APP_SETTINGS.get("CONFIG",{})
 
-ICON_PATH = os.path.join(BASE_PATH, "logo", "plc_to_modbus.ico")
+ICON_PATH = os.path.join(BASE_PATH, "static", "logo", "RegisterX.ico")
 
 # -----------------------------
 # System tray integration
 # -----------------------------
+
+def stop_flask():
+    pid = os.getpid()
+    print(f"Stopping Flask server (PID {pid})...")
+    os.kill(pid, signal.SIGTERM)  # or SIGINT
+    sys.exit(0)
+
+
+
 def run_tray():
     global icon
     if icon is None:
@@ -85,13 +97,15 @@ def create_tray():
 
 
 def stop_app(icon, item):
+    stop_flask()
     icon.stop()
-    os._exit(0)
+    sys.exit(1)
 
 
 def open_app(icon, item):
     host = "127.0.0.1" if CONFIG.get("host","127.0.0.1") == "0.0.0.0" else CONFIG.get("host","127.0.0.1")
     webbrowser.open(f'http://{host}:{CONFIG.get("port",5000)}')
+
 
 
 # -----------------------------
@@ -123,7 +137,6 @@ def home():
     return render_template("home.html")
 
 
-
 @app.route("/about", methods=["GET", "POST"])
 def about():
     if request.method == "POST":
@@ -137,15 +150,31 @@ def about():
     return render_template("about.html")
 
 
+
+
+def ensure_single_instance():
+    """Prevent running multiple instances of the same app on Windows."""
+    global lockfile
+    lockfile = open(LOCK_FILE, "w")
+    try:
+        msvcrt.locking(lockfile.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        print("❌ Another instance of this Flask app is already running.")
+        sys.exit(1)
+        
 if __name__ == '__main__':
-    print(CONFIG)
+    port=int(CONFIG.get("port",5000))
+
+    ensure_single_instance()
+
     if CONFIG.get("run_systray",""):
         create_tray()
         print("Started systray...")
     else:
         print("Systray disabled in settings.")
-
+    
+    
     app.run(host=CONFIG.get("host","0.0.0.0"),
-            port=CONFIG.get("port",5000),
+            port=port,
             debug=CONFIG.get("debug","false").lower() == "true"
-    )
+            )

@@ -6,16 +6,13 @@ convert_blueprint = Blueprint('convert', __name__)
 
 
 
-
 @convert_blueprint.route("/")
 def convert_page():
-    plc_keys = list(Convert.PLC_MAPPINGS.keys())
-    return render_template("convert.html",plc_keys=plc_keys)
-
-
-
-
-
+    plc_make_list = list(Convert.PLC_MAPPINGS.keys())  
+    plc_type_list = {}
+    for make in Convert.PLC_MAPPINGS.keys():
+        plc_type_list[make] = list(Convert.PLC_MAPPINGS[make].keys())
+    return render_template("convert.html", plc_make=plc_make_list, plc_mappings=plc_type_list)
 
 
 
@@ -29,12 +26,22 @@ def convert_api():
         # Example: call the real converter
         if plc_type == "SV2":
             raw, converted = Convert.sv2(address, reg_type)
-        elif plc_type == "AS":
-            raw, converted = Convert.as_series(address, reg_type)
-        elif plc_type == "SA2":
-            raw, converted = Convert.sa2(address, reg_type)
+        elif plc_type == "ES2":
+            raw, converted = Convert.es2(address, reg_type)
+        elif plc_type == "EX2":
+            raw, converted = Convert.ex2(address, reg_type)
         elif plc_type == "SS2":
             raw, converted = Convert.ss2(address, reg_type)
+        elif plc_type == "SE":
+            raw, converted = Convert.se(address, reg_type)
+        elif plc_type == "SA2":
+            raw, converted = Convert.sa2(address, reg_type)
+        elif plc_type == "SX2":
+            raw, converted = Convert.sx2(address, reg_type)
+        elif plc_type == "AS":
+            raw, converted = Convert.as_series(address, reg_type)
+        
+        
         else:
             raw, converted = ("99999", "999")
 

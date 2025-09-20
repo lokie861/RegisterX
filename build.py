@@ -5,7 +5,7 @@ import shutil
 
 # === Configuration ===
 project_dir = os.getcwd()
-icon_path = os.path.join(project_dir, "logo\\plc_to_modbus.ico")
+icon_path = os.path.join(project_dir, "static\\logo\\RegisterX.ico")
 entry_file = os.path.join(project_dir, "app.py")
 exe_name = "RegisterX"
 exe_output_dir = os.path.join(os.getcwd(), "Builds","EXE")
@@ -44,7 +44,6 @@ def build_exe():
         f'--add-data "{project_dir}/Blueprints;Blueprints" '
         f'--add-data "{project_dir}/templates;templates" '
         f'--add-data "{project_dir}/static;static" '
-        f'--add-data "{project_dir}/logo;logo" '
 
         f'"{entry_file}" '
     )

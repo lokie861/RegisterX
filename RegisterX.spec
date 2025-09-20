@@ -10,7 +10,7 @@ a = Analysis(
     ['D:\\Personal Projects\\RegisterX\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('D:\\Personal Projects\\RegisterX/Convert.py', '.'), ('D:\\Personal Projects\\RegisterX/Blueprints', 'Blueprints'), ('D:\\Personal Projects\\RegisterX/templates', 'templates'), ('D:\\Personal Projects\\RegisterX/static', 'static'), ('D:\\Personal Projects\\RegisterX/logo', 'logo')],
+    datas=[('D:\\Personal Projects\\RegisterX/Convert.py', '.'), ('D:\\Personal Projects\\RegisterX/Blueprints', 'Blueprints'), ('D:\\Personal Projects\\RegisterX/templates', 'templates'), ('D:\\Personal Projects\\RegisterX/static', 'static')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
@@ -40,6 +40,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['D:\\Personal Projects\\RegisterX\\logo\\plc_to_modbus.ico'],
+    icon=['D:\\Personal Projects\\RegisterX\\static\\logo\\RegisterX.ico'],
     manifest='elevated.manifest',
 )

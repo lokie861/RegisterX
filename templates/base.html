@@ -1,10 +1,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PLC Modbus Converter</title>
-  <link rel="icon" href="{{ url_for('static', filename='logo.ico') }}">
+  <title>RegisterX</title>
+  <link rel="icon" href="{{ url_for('static',filename='logo/RegisterX.ico') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+  <!-- script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script-->
   <script>
     function copyToClipboard(textId) {
       let text = document.getElementById(textId).innerText;
@@ -16,7 +16,7 @@
 </head>
 <body>
   <nav class="navbar">
-    <img src="{{ url_for('static', filename='logo.ico') }}" class="logo" alt="Logo">
+    <img src="{{ url_for('static', filename='logo/RegisterX No Background.png') }}" class="logo" alt="Logo">
     <a href="{{ url_for('home') }}">Home</a>
     <a href="{{ url_for('convert.convert_page') }}">Convert</a>
     <a href="{{ url_for('about') }}">About</a>  <!-- NEW -->
