@@ -8,14 +8,16 @@ import configparser
 import msvcrt
 import signal
 from plyer import notification
+import subprocess
 
+from threading import Thread
 from PIL import Image
 from flask import Flask, redirect, render_template, request, url_for
 from flask_cors import CORS
 import pystray
 
 from Blueprints.Converter_routes import convert_blueprint
-
+from version_control import get_latest_release, download_latest_exe, is_update_available
 
 
 BASE_PATH = None 
@@ -23,7 +25,8 @@ APP_SETTINGS = None
 ICON_PATH = None
 icon = None
 LOCK_FILE = "RegisterX.lock"
-
+REPO_DIR = "https://github.com/lokie861/RegisterX"
+VERSION = "0.0.0"
 # -----------------------------
 # Path setup
 # -----------------------------
@@ -81,6 +84,10 @@ def ensure_single_instance():
         send_notification("RegisterX","Another Instance is running.",timeout=5)
         sys.exit(1)
 
+def update_application():
+    print("updating application...")
+    Thread(target=download_latest_exe,args=(REPO_DIR,VERSION)).start()
+
 # -----------------------------
 # System tray integration
 # -----------------------------
@@ -96,13 +103,26 @@ def stop_flask():
 
 
 def run_tray():
-    global icon
+    global icon, VERSION
     if icon is None:
+        try:
+            release_details = get_latest_release(REPO_DIR)
+            release_available = is_update_available(
+                                    CONFIG.get("version","0.0.0"),
+                                    release_details.get("name")[1:])
+            if release_available:
+                VERSION = release_details.get("name")[1:]
+        except Exception as e:
+            print(f"Error checking for updates: {e}")
+            release_available = False
+
         image = Image.open(ICON_PATH)
         menu = pystray.Menu(
-            pystray.MenuItem("Open RegisterX", open_app),
-            pystray.MenuItem("Exit", stop_app)
+            pystray.MenuItem("Open RegisterX", open_app,enabled=True),
+            pystray.MenuItem("Exit", stop_app,enabled=True),
+            pystray.MenuItem("Update Application",update_application,enabled=release_available)
         )
+
         icon = pystray.Icon("RegisterX", image, "RegisterX", menu)
         icon.run()
     try:

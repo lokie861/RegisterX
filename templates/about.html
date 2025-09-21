@@ -1,42 +1,50 @@
 {% extends "base.html" %}
 
+{% block title %}About{% endblock %}
+
 {% block content %}
 <head>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
 </head>
-<div class="about-container">
-  <h1>About</h1>
-  <p><strong>Developer:</strong> Lokesh</p>
-  <p><strong>Email: </strong> 
-    <a href="mailto:plokesh23.01@gmail.com">plokesh23.01@gmail.com</a>
-  </p>
-  <p><strong>GitHub: </strong> 
-    <a href="https://github.com/lokie861" target="_blank">https://github.com/lokie861</a>
-  </p>
+
+<section class="about-page">
   
-  <h2>Report a Bug</h2>
-  <form id="bugForm" onsubmit="return sendBugReport(event)">
-    <textarea id="bugReport" rows="4" cols="50" placeholder="Describe the bug here..." required></textarea>
-    <br>
-    <button type="submit">Submit Bug Report</button>
-  </form>
-</div>
+  <!-- Left: About / GitHub -->
+  <div class="about-left">
+    <h2>About Me</h2>
+    <p>
+      Hi, I’m <strong>Lokesh</strong>, the creator of <strong>RegisterX</strong>.  
+      This tool was built to simplify the process of converting PLC register addresses into Modbus format quickly and accurately.  
+    </p>
+    <p>
+      🔗 Check out my projects on  
+      <a href="https://github.com/lokie861" target="_blank" class="github-link">
+        GitHub
+      </a>
+    </p>
+  </div>
+
+  <!-- Right: Report Bug / Suggestion -->
+  <div class="about-right">
+    <h2>Report a Bug / Suggestion</h2>
+    <p>Enter your bug or suggestion below and click report:</p>
+    <textarea id="report-text" placeholder="Type your message here..."></textarea>
+    <button onclick="sendReport()" class="btn-primary">Report</button>
+  </div>
+
+</section>
 
 <script>
-  function sendBugReport(event) {
-    event.preventDefault();
-
-    let bugText = document.getElementById("bugReport").value;
-    let email = "plokesh23.01@gmail.com";
-    let subject = "Bug Report - PLC Modbus Converter";
-    let body = encodeURIComponent(bugText);
-
-    // Gmail compose link
-    let gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${encodeURIComponent(subject)}&body=${body}`;
-
-    // Open in new browser tab
-    window.open(gmailLink, "_blank");
-    return false;
-  }
+function sendReport() {
+    const text = document.getElementById("report-text").value.trim();
+    if (!text) {
+        alert("Please enter a message before reporting.");
+        return;
+    }
+    const subject = "Bug Report or Suggestion";
+    const body = encodeURIComponent(text);
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=plokesh23.01@gmail.com&su=${encodeURIComponent(subject)}&body=${body}`;
+    window.open(gmailUrl, "_blank");
+}
 </script>
 {% endblock %}

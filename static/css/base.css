@@ -1,0 +1,151 @@
+/* Reset some default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+nav a {
+    text-decoration: none;
+    color: white;
+    font-weight: 600;          /* bold text */
+    font-size: 18px;           /* good nav size */
+    margin: 0 15px;            /* spacing between links */
+    transition: color 0.3s, transform 0.2s;
+    position: relative;
+    gap: 5px;
+}
+
+/* Hover effect: color + underline animation */
+nav a:hover {
+    color: #1abc9c;            /* highlight color */
+    transform: translateY(-2px);
+}
+
+nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 0%;
+    height: 2px;
+    background: #1abc9c;
+    transition: width 0.3s ease-in-out;
+}
+
+nav a:hover::after {
+    width: 100%;
+}
+
+/* Body as flex container to push footer down */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+#logo-img {
+    height:35px; 
+    width: 35px;
+    vertical-align:middle; 
+    margin-right:10px;
+    border-radius: 50px;
+}
+/* Navbar Styles */
+nav {
+    background: linear-gradient(90deg, #1abc9c, #011f19);
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: fit-content;
+}
+
+nav .logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+nav ul li {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+nav ul li:hover {
+    color: #1abc9c;
+}
+
+/* Main Content */
+main {
+    flex: 1; /* This pushes the footer to the bottom */
+    padding: 40px 20px;
+    background-color: #ecf0f1;
+}
+
+/* Footer with gradient */
+footer {
+    background: linear-gradient(90deg, #1abc9c, #011f19); /* left to right gradient */
+    color: white;
+    text-align: center;
+    padding: 15px 20px;
+    font-weight: 500;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.2); /* subtle shadow */
+}
+
+
+footer p {
+    margin: 0;
+}
+
+/* Notification Toast */
+.notification {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #16a085;
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    padding: 15px;
+    position: fixed;
+    z-index: 2000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.5s, bottom 0.5s;
+}
+
+/* Show state */
+.notification.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px;
+}
+
+/* Success/Error Variants */
+.notification.success {
+    background-color: #000000;
+}
+.notification.error {
+    background-color: #e74c3c;
+}
+
+
+
+/* Responsive Navbar */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

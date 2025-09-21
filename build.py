@@ -14,6 +14,21 @@ output_dir = os.path.join(project_dir, "Builds", "Installer")
 iscc_path = r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"  # Adjust path if needed
 
 
+def build_updater():
+    updater_script = os.path.join(project_dir, "updater.py")
+    updater_output_dir = os.path.join(os.getcwd(), "Builds","Updater")
+    command = (
+        f'pyinstaller --noconfirm --onefile --noconsole '
+        f'--distpath "{exe_output_dir}" '
+        f'--name "updater" '
+        f'--icon "{icon_path}" '
+        f'"{updater_script}" '
+    )
+
+    print("[INFO] Building Updater EXE...")
+    subprocess.run(command, shell=True, check=True)
+    print("[SUCCESS] Updater EXE created.")
+
 def build_exe():
     command = (
         f'pyinstaller --noconfirm --onefile --noconsole '
@@ -86,7 +101,7 @@ def clean_builds(type):
 
 
 def main():
-    if len(sys.argv) > 3 or not (sys.argv[1] in ("clean", "exe", "installer")):
+    if len(sys.argv) > 3 or not (sys.argv[1] in ("clean", "exe", "installer", "updater")):
         print("Usage: python build.py [exe|installer|clean]")
         return
 
@@ -94,6 +109,8 @@ def main():
         build_exe()
     elif sys.argv[1] == "installer":
         build_installer()
+    elif sys.argv[1] == "updater":
+        build_updater()
     elif sys.argv[1] == "clean":
         clean_builds(sys.argv[2])
     else:

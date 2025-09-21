@@ -1,26 +1,15 @@
 {% extends "base.html" %}
+
 {% block content %}
 <head>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
-<!-- Hero Section -->
 <section class="hero">
   <h1>Welcome to RegisterX</h1>
   <p>A simple tool to convert PLC register addresses into Modbus format quickly and accurately.</p>
   <a href="{{ url_for('convert.convert_page') }}" class="btn-primary">
     <i class="fas fa-play"></i> Start Converting
   </a>
-</section>
-
-<!-- About Section -->
-<section class="about">
-  <h2><i class="fas fa-user"></i> About This Project</h2>
-  <p>Built by <strong>Lokesh</strong> to simplify PLC register to Modbus conversions.</p>
-  <p>
-    Connect with me: 
-    <a href="mailto:plokesh23.01@gmail.com"><i class="fas fa-envelope"></i> Email</a> | 
-    <a href="https://github.com/your-github-username" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-  </p>
 </section>
 
 {% endblock %}
