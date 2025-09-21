@@ -33,10 +33,12 @@ def build_exe():
         f'--hidden-import=cachelib '
         f'--hidden-import=wmi '
         f'--hidden-import=pywintypes '
+        f'--hidden-import=plyer '
 
         # Collect submodules for packages that use dynamic imports
         f'--collect-submodules engineio '
         f'--collect-submodules werkzeug '
+        f'--collect-submodules plyer '
 
 
         # Data files

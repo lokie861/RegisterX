@@ -1,9 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
 
-hiddenimports = ['flask', 'socketio.namespace', 'engineio.async_drivers.threading', 'flask_cors', 'PIL.Image', 'pystray', 'bidict', 'flask_session', 'cachelib', 'wmi', 'pywintypes']
+hiddenimports = ['flask', 'socketio.namespace', 'engineio.async_drivers.threading', 'flask_cors', 'PIL.Image', 'pystray', 'bidict', 'flask_session', 'cachelib', 'wmi', 'pywintypes', 'plyer']
 hiddenimports += collect_submodules('engineio')
 hiddenimports += collect_submodules('werkzeug')
+hiddenimports += collect_submodules('plyer')
 
 
 a = Analysis(

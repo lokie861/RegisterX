@@ -7,6 +7,7 @@ import webbrowser
 import configparser
 import msvcrt
 import signal
+from plyer import notification
 
 from PIL import Image
 from flask import Flask, redirect, render_template, request, url_for
@@ -58,12 +59,36 @@ CONFIG = APP_SETTINGS.get("CONFIG",{})
 
 ICON_PATH = os.path.join(BASE_PATH, "static", "logo", "RegisterX.ico")
 
+
+
+def send_notification(title: str, message: str, timeout: int = 5):
+    icon_path = os.path.join(ICON_PATH)
+    notification.notify(
+        title=title,
+        message=message,
+        timeout=timeout,
+        app_icon=icon_path
+    )
+
+def ensure_single_instance():
+    """Prevent running multiple instances of the same app on Windows."""
+    global lockfile
+    lockfile = open(LOCK_FILE, "w")
+    try:
+        msvcrt.locking(lockfile.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        print("❌ Another instance of this Flask app is already running.")
+        send_notification("RegisterX","Another Instance is running.",timeout=5)
+        sys.exit(1)
+
 # -----------------------------
 # System tray integration
 # -----------------------------
 
 def stop_flask():
     pid = os.getpid()
+    send_notification("RegisterX","Stopping RegisterX",timeout=5)
+    time.sleep(5)
     print(f"Stopping Flask server (PID {pid})...")
     os.kill(pid, signal.SIGTERM)  # or SIGINT
     sys.exit(0)
@@ -150,22 +175,13 @@ def about():
     return render_template("about.html")
 
 
-
-
-def ensure_single_instance():
-    """Prevent running multiple instances of the same app on Windows."""
-    global lockfile
-    lockfile = open(LOCK_FILE, "w")
-    try:
-        msvcrt.locking(lockfile.fileno(), msvcrt.LK_NBLCK, 1)
-    except OSError:
-        print("❌ Another instance of this Flask app is already running.")
-        sys.exit(1)
         
 if __name__ == '__main__':
     port=int(CONFIG.get("port",5000))
-
-    ensure_single_instance()
+    debug_mode = CONFIG.get("debug","false").lower() == "true"
+    
+    if not debug_mode:
+        ensure_single_instance()
 
     if CONFIG.get("run_systray",""):
         create_tray()
@@ -173,8 +189,7 @@ if __name__ == '__main__':
     else:
         print("Systray disabled in settings.")
     
-    
+    send_notification("RegisterX",f"Started RegisterX service on port {port}",timeout=5)
     app.run(host=CONFIG.get("host","0.0.0.0"),
             port=port,
-            debug=CONFIG.get("debug","false").lower() == "true"
-            )
+            debug=debug_mode)
