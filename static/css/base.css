@@ -142,10 +142,53 @@ footer p {
 
 
 
-/* Responsive Navbar */
+/* Hamburger menu hidden on desktop */
+.hamburger {
+    display: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+}
+
+/* Mobile Styles */
 @media (max-width: 768px) {
+    nav {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .hamburger {
+        display: block;  /* show on mobile */
+    }
+
     nav ul {
         flex-direction: column;
-        gap: 10px;
+        background: linear-gradient(90deg, #1abc9c, #011f19);
+        width: 100%;
+        position: absolute;
+        top: 60px;              /* below navbar */
+        left: 0;
+        padding: 0;
+        max-height: 0;          /* hidden by default */
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.4s ease, opacity 0.4s ease;
+    }
+
+     nav ul.show {
+        max-height: 300px;      /* enough to show all links */
+        opacity: 1;
+        padding: 15px 0;
+    }
+
+    nav ul li {
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    nav ul li a {
+        display: block;
+        padding: 10px;
     }
 }

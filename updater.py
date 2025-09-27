@@ -4,11 +4,11 @@ import sys
 import configparser
 import subprocess
 import time
-import io
 
-# --- Force UTF-8 output for Windows console ---
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+if sys.stdout:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr:
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 def run_exe(exe_path: str, args: list[str] = None, timeout: int = 60) -> tuple[int, str, str]:
     """
@@ -31,17 +31,15 @@ def run_exe(exe_path: str, args: list[str] = None, timeout: int = 60) -> tuple[i
     if os.name == "nt":  # Windows only
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        creationflags = subprocess.CREATE_NO_WINDOW
 
     try:
         result = subprocess.run(
             [exe_path] + (args if args else []),
             capture_output=True,
+            creationflags=subprocess.CREATE_NO_WINDOW, 
             text=True,
-            timeout=timeout,
-            check=False,  # don't raise exception on non-zero exit
-            startupinfo=startupinfo,
-            creationflags=creationflags
+            timeout=60,
+            check=False
         )
         return (result.returncode, result.stdout.strip(), result.stderr.strip())
 

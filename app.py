@@ -8,7 +8,6 @@ import configparser
 import msvcrt
 import signal
 from plyer import notification
-import subprocess
 
 from threading import Thread
 from PIL import Image
@@ -17,27 +16,21 @@ from flask_cors import CORS
 import pystray
 
 from Blueprints.Converter_routes import convert_blueprint
-from version_control import get_latest_release, download_latest_exe, is_update_available
+from version_control import (
+    get_latest_release, 
+    is_update_available, 
+    start_update_process,
+    REPO_DIR,
+    BASE_PATH,
+    DEBUG_MODE
+    )
 
-
-BASE_PATH = None 
 APP_SETTINGS = None
 ICON_PATH = None
 icon = None
 LOCK_FILE = "RegisterX.lock"
-REPO_DIR = "https://github.com/lokie861/RegisterX"
 VERSION = "0.0.0"
-# -----------------------------
-# Path setup
-# -----------------------------
-# BASE_PATH = getattr(sys, 'frozen', False) and sys._MEIPASS or os.getcwd()
 
-if getattr(sys, 'frozen', False):
-    # Running in PyInstaller bundle
-    BASE_PATH = sys._MEIPASS
-else:
-    # Running as script or unpacked/
-    BASE_PATH = os.getcwd()
 
 
 
@@ -81,12 +74,12 @@ def ensure_single_instance():
         msvcrt.locking(lockfile.fileno(), msvcrt.LK_NBLCK, 1)
     except OSError:
         print("❌ Another instance of this Flask app is already running.")
-        send_notification("RegisterX","Another Instance is running.",timeout=5)
+        send_notification("RegisterX","Another Instance is running.",timeout=2)
         sys.exit(1)
 
 def update_application():
     print("updating application...")
-    Thread(target=download_latest_exe,args=(REPO_DIR,VERSION)).start()
+    Thread(target=start_update_process,args=(VERSION,)).start()
 
 # -----------------------------
 # System tray integration
@@ -157,7 +150,7 @@ def open_app(icon, item):
 # Flask App setup
 # -----------------------------
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'PLCTOMODBUS'
+app.config['SECRET_KEY'] = 'RegisterX'
 CORS(app, supports_credentials=True)
 
 
@@ -198,8 +191,11 @@ def about():
         
 if __name__ == '__main__':
     port=int(CONFIG.get("port",5000))
-    debug_mode = CONFIG.get("debug","false").lower() == "true"
-    
+    if DEBUG_MODE is None:
+        debug_mode = CONFIG.get("debug","false").lower() == "true"
+    else:
+        debug_mode = False
+
     if not debug_mode:
         ensure_single_instance()
 
@@ -209,7 +205,7 @@ if __name__ == '__main__':
     else:
         print("Systray disabled in settings.")
     
-    send_notification("RegisterX",f"Started RegisterX service on port {port}",timeout=5)
+    send_notification("RegisterX",f"Started RegisterX service on port {port}",timeout=2)
     app.run(host=CONFIG.get("host","0.0.0.0"),
             port=port,
             debug=debug_mode)
