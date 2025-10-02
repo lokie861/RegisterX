@@ -1,15 +1,13 @@
 
 import os
 import sys
-from threading import Thread
 import time
 import webbrowser
-import configparser
-import msvcrt
+import ctypes
 import signal
-from plyer import notification
+import winreg
+import threading
 
-from threading import Thread
 from PIL import Image
 from flask import Flask, redirect, render_template, request, url_for
 from flask_cors import CORS
@@ -22,64 +20,75 @@ from version_control import (
     start_update_process,
     REPO_DIR,
     BASE_PATH,
-    DEBUG_MODE
+    DEBUG_MODE,
+    ICON_PATH
     )
 
 APP_SETTINGS = None
-ICON_PATH = None
 icon = None
 LOCK_FILE = "RegisterX.lock"
 VERSION = "0.0.0"
+CONFIG = {}
 
 
+def read_registerx_config():
+    config = {}
+    try:
+        # Open the registry key where RegisterX settings are stored
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"SOFTWARE\RegisterX"
+        )
 
+        # Enumerate all values under this key
+        i = 0
+        while True:
+            try:
+                name, val, regtype = winreg.EnumValue(key, i)
 
-def load_app_settings(file_path: str) -> dict:
-    """
-    Reads an INI file and converts it into a nested dictionary.
-    
-    :param file_path: Path to the ini file
-    :return: Dictionary with sections as keys and their key-value pairs as nested dicts
-    """
-    config = configparser.ConfigParser()
-    config.optionxform = str  # preserve case sensitivity of keys
-    config.read(file_path)
+                # Convert registry strings like "true"/"false" to bool
+                if isinstance(val, str):
+                    if val.lower() in ("true", "false"):
+                        val = val.lower() == "true"
+                    elif val.isdigit():
+                        val = int(val)
 
-    ini_dict = {section: dict(config[section]) for section in config.sections()}
-    print("App Settings Loaded")
-    return ini_dict
+                config[name] = val
+                i += 1
+            except OSError:
+                break  # No more values
 
+        winreg.CloseKey(key)
 
-APP_SETTINGS = load_app_settings(os.path.join(os.getcwd(),"app.ini"))
-CONFIG = APP_SETTINGS.get("CONFIG",{})
+    except FileNotFoundError:
+        print("RegisterX registry key not found.")
+        return None
 
-ICON_PATH = os.path.join(BASE_PATH, "static", "logo", "RegisterX.ico")
+    return config
 
-
-
-def send_notification(title: str, message: str, timeout: int = 5):
-    icon_path = os.path.join(ICON_PATH)
-    notification.notify(
-        title=title,
-        message=message,
-        timeout=timeout,
-        app_icon=icon_path
-    )
 
 def ensure_single_instance():
-    """Prevent running multiple instances of the same app on Windows."""
-    global lockfile
-    lockfile = open(LOCK_FILE, "w")
+    global icon
+    """Ensure only one instance of RegisterX.exe is running using Windows mutex."""
     try:
-        msvcrt.locking(lockfile.fileno(), msvcrt.LK_NBLCK, 1)
-    except OSError:
-        print("❌ Another instance of this Flask app is already running.")
-        send_notification("RegisterX","Another Instance is running.",timeout=2)
+        mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "RegisterX_SingleInstanceMutex")
+        last_error = ctypes.windll.kernel32.GetLastError()
+
+        # ERROR_ALREADY_EXISTS = 183
+        if last_error == 183:
+            print("❌ Another instance of RegisterX.exe is already running.")
+            on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
+            sys.exit(1)
+    except Exception as e:
+        print(f"Error creating mutex: {e}")
+        on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
         sys.exit(1)
 
 def update_application():
     print("updating application...")
-    Thread(target=start_update_process,args=(VERSION,)).start()
+    threading.Thread(target=start_update_process,args=(VERSION,)).start()
+
+
 
 # -----------------------------
 # System tray integration
@@ -87,64 +96,65 @@ def update_application():
 
 def stop_flask():
     pid = os.getpid()
-    send_notification("RegisterX","Stopping RegisterX",timeout=5)
+    on_notify(icon=icon,item=None,title="RegisterX",message="Stopping RegisterX")
     time.sleep(5)
     print(f"Stopping Flask server (PID {pid})...")
     os.kill(pid, signal.SIGTERM)  # or SIGINT
-    sys.exit(0)
-
 
 
 def run_tray():
-    global icon, VERSION
-    if icon is None:
-        try:
-            release_details = get_latest_release(REPO_DIR)
-            release_available = is_update_available(
-                                    CONFIG.get("version","0.0.0"),
-                                    release_details.get("name")[1:])
-            if release_available:
-                VERSION = release_details.get("name")[1:]
-        except Exception as e:
-            print(f"Error checking for updates: {e}")
-            release_available = False
+    global icon, VERSION, ICON_PATH, CONFIG, REPO_DIR
+    """Set up and run the system tray icon."""
+    if icon is not None:
+        return  # Already running
 
-        image = Image.open(ICON_PATH)
-        menu = pystray.Menu(
-            pystray.MenuItem("Open RegisterX", open_app,enabled=True),
-            pystray.MenuItem("Exit", stop_app,enabled=True),
-            pystray.MenuItem("Update Application",update_application,enabled=release_available)
-        )
-
-        icon = pystray.Icon("RegisterX", image, "RegisterX", menu)
-        icon.run()
     try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print("Exiting...")
-    finally:
-        if icon:
-            icon.stop()
+        release_details = get_latest_release(REPO_DIR)
+        release_available = is_update_available(
+            CONFIG.get("version","0.0.0"),
+            release_details.get("name")[1:]
+        )
+        if release_available:
+            VERSION = release_details.get("name")[1:]
+    except Exception as e:
+        print(f"Error checking for updates: {e}")
+        release_available = False
+
+    image = Image.open(ICON_PATH)
+    menu = pystray.Menu(
+        pystray.MenuItem("Open RegisterX", open_app, enabled=True),
+        pystray.MenuItem("Exit", stop_app, enabled=True),
+        pystray.MenuItem("Update Application", update_application, enabled=release_available)
+    )
+
+    icon = pystray.Icon("RegisterX", image, "RegisterX", menu)
+
+    # Run the tray icon in its own thread to avoid blocking
+    tray_thread = threading.Thread(target=icon.run)
+    tray_thread.daemon = True
+    tray_thread.start()
 
 
-def create_tray():
-    tray = Thread(target=run_tray)
-    tray.daemon = True
-    tray.start()
-
-
-def stop_app(icon, item):
-    stop_flask()
+def stop_app(item):
+    global icon
     icon.stop()
-    sys.exit(1)
+    stop_flask()
+
+
+def on_notify(icon, item, title, message):
+    global ICON_PATH
+    """Display a system notification."""
+    icon.notify(title=title, message=message)
 
 
 def open_app(icon, item):
     host = "127.0.0.1" if CONFIG.get("host","127.0.0.1") == "0.0.0.0" else CONFIG.get("host","127.0.0.1")
     webbrowser.open(f'http://{host}:{CONFIG.get("port",5000)}')
 
-
+def create_tray():
+    tray = threading.Thread(target=run_tray)
+    tray.daemon = True
+    tray.start()
 
 # -----------------------------
 # Flask App setup
@@ -152,9 +162,9 @@ def open_app(icon, item):
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'RegisterX'
 CORS(app, supports_credentials=True)
-
-
 app.register_blueprint(convert_blueprint,url_prefix="/convert")
+
+
 
 # -----------------------------
 # Default route
@@ -190,22 +200,30 @@ def about():
 
         
 if __name__ == '__main__':
+    # Read configuration from the registry
+    CONFIG = read_registerx_config()
+
     port=int(CONFIG.get("port",5000))
+
     if DEBUG_MODE is None:
-        debug_mode = CONFIG.get("debug","false").lower() == "true"
+        debug_mode = CONFIG.get("debug",False)
     else:
         debug_mode = False
-
-    if not debug_mode:
-        ensure_single_instance()
 
     if CONFIG.get("run_systray",""):
         create_tray()
         print("Started systray...")
     else:
         print("Systray disabled in settings.")
+
+    time.sleep(2)
+
+    if not debug_mode:
+        ensure_single_instance()
+
+    on_notify(icon=icon,item=None,title="RegisterX",message=f"Started RegisterX service on port {port}")
     
-    send_notification("RegisterX",f"Started RegisterX service on port {port}",timeout=2)
+    # Starts the Flask App
     app.run(host=CONFIG.get("host","0.0.0.0"),
             port=port,
             debug=debug_mode)

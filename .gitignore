@@ -5,3 +5,4 @@ Blueprints/__pycache__/
 Builds/
 build/
 RegisterX.lock
+test.py

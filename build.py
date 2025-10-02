@@ -49,6 +49,7 @@ def build_exe():
         f'--hidden-import=wmi '
         f'--hidden-import=pywintypes '
         f'--hidden-import=plyer '
+        f'--hidden-import=ctypes '
 
         # Collect submodules for packages that use dynamic imports
         f'--collect-submodules engineio '
@@ -101,7 +102,7 @@ def clean_builds(type):
 
 
 def main():
-    if len(sys.argv) > 3 or not (sys.argv[1] in ("clean", "exe", "installer", "updater")):
+    if len(sys.argv) > 4 or not (sys.argv[1] in ("clean", "exe", "installer", "updater","all")):
         print("Usage: python build.py [exe|installer|clean]")
         return
 
@@ -113,6 +114,11 @@ def main():
         build_updater()
     elif sys.argv[1] == "clean":
         clean_builds(sys.argv[2])
+    elif sys.argv[1] == "all":
+        clean_builds('exe')
+        build_exe()
+        build_updater()
+        build_installer()
     else:
         print("invalid parameter")
 

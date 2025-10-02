@@ -11,6 +11,7 @@ from plyer import notification
 
 BASE_PATH = None
 DEBUG_MODE = None
+
 if getattr(sys, 'frozen', False):
     # Running in PyInstaller bundle
     BASE_PATH = sys._MEIPASS
@@ -273,8 +274,8 @@ def get_hash(path: str | Path, algorithm: str = "sha256", prefer_certutil: bool 
 
 def get_release_checksum(repo_url: str, filename: str) -> str:
     checksum_path = download_checksum_file(repo_url=repo_url)
-    release_hash = get_sha_by_name("RegisterX.exe",checksum_path)
-    downloaded_hash = get_hash(os.path.join("temp","RegisterX.exe"), algorithm="sha256", prefer_certutil=True)
+    release_hash = get_sha_by_name("RegisterX_Installer.exe",checksum_path)
+    downloaded_hash = get_hash(os.path.join("temp","RegisterX_Installer.exe"), algorithm="sha256", prefer_certutil=True)
     if release_hash == downloaded_hash:
         pass
     else:
@@ -295,7 +296,7 @@ def download_latest_exe(repo_url: str, version: str, save_dir: str) -> str:
 
     try:
         
-        if os.path.exists(os.path.join(save_dir,"RegisterX.exe")):
+        if os.path.exists(os.path.join(save_dir,"RegisterX_Installer.exe")):
             pass
         else: 
             # Extract owner and repo
@@ -320,11 +321,11 @@ def download_latest_exe(repo_url: str, version: str, save_dir: str) -> str:
 
             if not exe_asset:
                 return "No .exe file found in the latest release"
-
+            print(exe_asset)
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             exe_url = exe_asset["browser_download_url"]
-            exe_name = exe_asset["name"]
+            exe_name = "RegisterX_Installer.exe"
             save_path = os.path.join(save_dir, exe_name)
 
             # Download the file
@@ -360,7 +361,7 @@ def start_update_process(new_version: str):
     print("Creating AppData directory...")
     appdata_dir = get_app_data_dir("RegisterX", create=False)
 
-    if os.path.exists(os.path.join(appdata_dir,"RegisterX.exe")):
+    if os.path.exists(os.path.join(appdata_dir,"RegisterX_Installer.exe")):
         delete_folder(appdata_dir)
         appdata_dir = get_app_data_dir("RegisterX", create=True)
 
@@ -372,16 +373,17 @@ def start_update_process(new_version: str):
         delete_folder(appdata_dir)
         return
     
-    print("Downloading latest executable...")
-    new_exe_path = download_latest_exe(repo_url=REPO_DIR,version=new_version,save_dir=appdata_dir)
-    if new_exe_path is None:
+    print("Downloading latest Installler...")
+    new_installer_path = download_latest_exe(repo_url=REPO_DIR,version=new_version,save_dir=appdata_dir)
+    # new_installer_path = os.path.join(appdata_dir,"RegisterX_Installer.exe")
+    if new_installer_path is None:
         print("Failed to download the latest executable.")
         send_notification("RegisterX","Failed to download Updates. \nTry again later",timeout=2)
         delete_folder(appdata_dir)
         return
     
     print("Verifying checksum...")
-    release_hash = get_sha_by_name("RegisterX.exe",checksum_path)
+    release_hash = get_sha_by_name("RegisterX_Installer.exe",checksum_path)
     if release_hash is None:
         send_notification("RegisterX","Downloaded Hash varification failed \nTry again later",timeout=2)
         delete_folder(appdata_dir)
@@ -389,14 +391,13 @@ def start_update_process(new_version: str):
     
     try:
         print("Computing hash of downloaded file...")
-        downloaded_hash = get_hash(new_exe_path, algorithm="sha256", prefer_certutil=True)
+        downloaded_hash = get_hash(new_installer_path, algorithm="sha256", prefer_certutil=True)
+        print(f"{release_hash}\n",downloaded_hash)
         if release_hash == downloaded_hash:
             print("Hash verified. Update can proceed.")
             updater_path = os.path.join(os.getcwd(),"updater.exe")
             args = [
-                    new_exe_path,
-                    os.path.join(os.getcwd(),"RegisterX.exe"),
-                    new_version
+                    new_installer_path
             ]
 
             # Create startup info to hide window
