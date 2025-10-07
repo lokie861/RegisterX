@@ -42,7 +42,7 @@ Root: HKCU; Subkey: "SOFTWARE\RegisterX"; ValueType: string; ValueName: "host"; 
 Root: HKCU; Subkey: "SOFTWARE\RegisterX"; ValueType: string; ValueName: "port"; ValueData: "7000"; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKCU; Subkey: "SOFTWARE\RegisterX"; ValueType: string; ValueName: "run_systray"; ValueData: "true"; Flags: uninsdeletevalue createvalueifdoesntexist
 Root: HKCU; Subkey: "SOFTWARE\RegisterX"; ValueType: string; ValueName: "debug"; ValueData: "false"; Flags: uninsdeletevalue createvalueifdoesntexist
-Root: HKCU; Subkey: "SOFTWARE\RegisterX"; ValueType: string; ValueName: "version"; ValueData: "0.1.1"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "SOFTWARE\RegisterX"; ValueType: string; ValueName: "version"; ValueData: "0.2.2"; Flags: uninsdeletevalue
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"

@@ -59,6 +59,8 @@ def build_exe():
 
         # Data files
         f'--add-data "{project_dir}/Convert.py;." '
+        f'--add-data "{project_dir}/Converstion.py;." '
+        f'--add-data "{project_dir}/version_control.py;." '
         f'--add-data "{project_dir}/Blueprints;Blueprints" '
         f'--add-data "{project_dir}/templates;templates" '
         f'--add-data "{project_dir}/static;static" '

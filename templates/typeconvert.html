@@ -1,13 +1,149 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<p> Type Convertions </p>
-
-
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/convert.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
 
 </head>
+<!-- Notification (hidden by default) -->
+<div id="notification" class="notification"></div>
+
+<section class="converter">
+  <!-- Input Section -->
+  <div class="input-section">
+    <h2>Type Converter</h2>
+    <form id="typeconvertForm">
+      
+      <!-- From Type -->
+      <label for="fromType"><i class="fas fa-exchange-alt"></i> From Type:</label>
+      <select name="fromType" id="fromType" required>
+        <option value="uint16">16-bit Array</option>
+        <option value="string">String</option>
+        <option value="float32">Float (32-bit)</option>
+        <option value="double">Double (64-bit)</option>
+        <option value="int32">Int32</option>
+        <option value="uint32">UInt32</option>
+      </select>
+
+      <!-- To Type -->
+      <label for="toType"><i class="fas fa-exchange-alt"></i> To Type:</label>
+      <select name="toType" id="toType" required>
+        <option value="string">String</option>
+        <option value="uint16">16-bit Array</option>
+        <option value="float32">Float (32-bit)</option>
+        <option value="double">Double (64-bit)</option>
+        <option value="int32">Int32</option>
+        <option value="uint32">UInt32</option>
+      </select>
+
+      <!-- Endianness -->
+      <label for="endianness"><i class="fas fa-long-arrow-alt-down"></i> Byte Order:</label>
+      <select name="endianness" id="endianness" required>
+        <option value="little">Little Endian</option>
+        <option value="big">Big Endian</option>
+      </select>
+
+      <!-- Input Value -->
+      <label for="inputValue"><i class="fas fa-keyboard"></i> Input Value:</label>
+      <input type="text" id="inputValue" name="inputValue" placeholder="Enter 16-bit array, e.g. [1234,5678]" required>
+
+      <button type="submit" class="btn-primary">Convert</button>
+    </form>
+  </div>
+
+  <!-- Output Section -->
+  <div class="output-section">
+    <h2>Result</h2>
+    <div class="output-box">
+      <div class="output-item">
+        <label>Converted Value:</label>
+        <div class="output-value">
+          <span id="converted-value"></span>
+          <button onclick="copyToClipboard('converted-value')" class="copy-btn">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const fromType = document.getElementById('fromType');
+const inputValue = document.getElementById('inputValue');
+const typeconvertForm = document.getElementById('typeconvertForm');
+const convertedValue = document.getElementById('converted-value');
+
+const placeholders = {
+  uint16: "Enter 16-bit array, e.g. [1234,5678]",
+  string: "Enter text, e.g. Hello",
+  float32: "Enter float, e.g. 12.34",
+  double: "Enter double, e.g. 123.456789",
+  int32: "Enter integer, e.g. -12345",
+  uint32: "Enter unsigned integer, e.g. 12345"
+};
+
+// Dynamic placeholder based on From Type
+fromType.addEventListener('change', () => {
+  const selected = fromType.value;
+  inputValue.placeholder = placeholders[selected] || "Enter value";
+});
+
+
+function showNotification(message, type = "success") {
+    const notification = document.getElementById("notification");
+    notification.innerText = message;
+    notification.className = `notification show ${type}`;
+    
+    // Hide after 3s
+    setTimeout(() => {
+        notification.className = "notification";
+    }, 3000);
+}
+
+
+function copyToClipboard(id) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        // alert('Copied to clipboard: ' + text);
+        showNotification('Copied to clipboard!', 'success');
+    }).catch(err => {
+        console.error('Failed to copy!', err);
+    });
+}
+
+// Handle form submission
+typeconvertForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const payload = {
+    from_type: document.getElementById('fromType').value,
+    to_type: document.getElementById('toType').value,
+    endian: document.getElementById('endianness').value,
+    value: document.getElementById('inputValue').value
+  };
+
+  try {
+    const response = await fetch('/typeconverter/convert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      convertedValue.innerText = 
+        Array.isArray(result.result) ? JSON.stringify(result.result) : result.result;
+    } else {
+      convertedValue.innerText = "Error: " + result.error;
+    }
+
+  } catch (err) {
+    convertedValue.innerText = "Error: " + err.message;
+  }
+});
+</script>
+
+
+
 {% endblock %}

@@ -6,10 +6,20 @@
 </head>
 <section class="hero">
   <h1>Welcome to RegisterX</h1>
-  <p>A simple tool to convert PLC register addresses into Modbus format quickly and accurately.</p>
-  <a href="{{ url_for('convert.convert_page') }}" class="btn-primary">
+  <p>A simple tool to convert PLC register addresses into Modbus format<BR>And Datatype Conversions quickly and accurately.</p>
+  <!--a href="{{ url_for('convert.convert_page') }}" class="btn-primary">
     <i class="fas fa-play"></i> Start Converting
-  </a>
+  </a-->
+   <div class="hero-cards">
+    <a href="{{ url_for('convert.convert_page') }}" class="hero-card">
+      <h2>Address Conversion</h2>
+      <p>Convert PLC register addresses into Modbus format.</p>
+    </a>
+    <a href="{{ url_for('typeconverter.typeconverterhome') }}" class="hero-card">
+      <h2>Data Type Conversion</h2>
+      <p>Quickly convert PLC data types into the required format.</p>
+    </a>
+  </div>
 </section>
 
 {% endblock %}

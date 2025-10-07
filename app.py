@@ -78,11 +78,11 @@ def ensure_single_instance():
         # ERROR_ALREADY_EXISTS = 183
         if last_error == 183:
             print("❌ Another instance of RegisterX.exe is already running.")
-            on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
+            # on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
             sys.exit(1)
     except Exception as e:
         print(f"Error creating mutex: {e}")
-        on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
+        # on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
         sys.exit(1)
 
 
@@ -200,6 +200,9 @@ def about():
     return render_template("about.html")
 
 
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
         
 if __name__ == '__main__':
     # Read configuration from the registry
@@ -212,16 +215,18 @@ if __name__ == '__main__':
     else:
         debug_mode = False
 
+    if not debug_mode:
+        ensure_single_instance()
+
     if CONFIG.get("run_systray",""):
         create_tray()
         print("Started systray...")
     else:
         print("Systray disabled in settings.")
 
-    time.sleep(2)
+    time.sleep(5)
 
-    if not debug_mode:
-        ensure_single_instance()
+    
 
     on_notify(icon=icon,item=None,title="RegisterX",message=f"Started RegisterX service on port {port}")
     

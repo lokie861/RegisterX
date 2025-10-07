@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ResgisterX{% endblock %}</title>
-  <link rel="icon" href="{{ url_for('static',filename='logo/RegisterX No Background.png') }}">
+   <link rel="icon" href="{{ url_for('static',filename='logo/RegisterX No Background.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 </head>
 <body>
@@ -12,7 +12,7 @@
     <nav>
         <div class="logo">
             <img id="logo-img" src="{{ url_for('static', filename='logo/RegisterX No Background.png') }}" alt="Logo">
-            <a href="/" style="color:white; text-decoration:none;">RegisterX</a>
+            <span style="color:white; text-decoration:none;">RegisterX</span>
         </div>
 
         <!-- Hamburger icon -->
@@ -20,8 +20,8 @@
 
         <ul id="nav-links">
             <li><a href="/">Home</a></li>
-            <li><a href="/convert">Convert</a></li>
-            <li><a href="/typeconverter">TypeConvert</a></li>
+            <!--li><a href="/convert">Convert</a></li>
+            <li><a href="/typeconverter">TypeConvert</a></li-->
             <li><a href="/about">About</a></li>
         </ul>
     </nav>
