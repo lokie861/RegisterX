@@ -14,6 +14,7 @@ from flask_cors import CORS
 import pystray
 
 from Blueprints.Converter_routes import convert_blueprint
+from Blueprints.Type_converter_routes import typeconverter
 from version_control import (
     get_latest_release, 
     is_update_available, 
@@ -83,6 +84,7 @@ def ensure_single_instance():
         print(f"Error creating mutex: {e}")
         on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
         sys.exit(1)
+
 
 def update_application():
     print("updating application...")
@@ -163,7 +165,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'RegisterX'
 CORS(app, supports_credentials=True)
 app.register_blueprint(convert_blueprint,url_prefix="/convert")
-
+app.register_blueprint(typeconverter,url_prefix="/typeconverter")
 
 
 # -----------------------------
