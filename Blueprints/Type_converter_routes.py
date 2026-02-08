@@ -16,10 +16,12 @@ converter = TypeConversions()
 def convert_value():
     """
     Convert data between types using TypeConversions.
+    IMPROVED: Now supports long64 and ulong64 types!
+    
     Expected JSON:
     {
-        "from_type": "uint16" | "string" | "float32" | "double" | "int32" | "uint32",
-        "to_type": "string" | "uint16" | "float32" | "double" | "int32" | "uint32",
+        "from_type": "uint16" | "string" | "float32" | "double" | "int32" | "uint32" | "long64" | "ulong64",
+        "to_type": "string" | "uint16" | "float32" | "double" | "int32" | "uint32" | "long64" | "ulong64",
         "value": <string or list of ints>,
         "endian": "little" | "big"
     }
@@ -49,9 +51,12 @@ def convert_value():
             if not (isinstance(value, list) and all(isinstance(v, int) for v in value)):
                 return jsonify({"error": "value must be a list of integers for uint16"}), 400
 
-        elif from_type in ["float32", "double", "int32", "uint32"]:
+        elif from_type in ["float32", "double", "int32", "uint32", "long64", "ulong64"]:
             try:
-                value = float(value) if "float" in from_type or "double" in from_type else int(value)
+                if "float" in from_type or "double" in from_type:
+                    value = float(value)
+                else:
+                    value = int(value)
             except ValueError:
                 return jsonify({"error": f"Invalid numeric value for {from_type}"}), 400
 
@@ -77,6 +82,10 @@ def convert_value():
                 result = converter.to_int32(value, inverse=inverse)
             elif to_type == "uint32":
                 result = converter.to_uint32(value, inverse=inverse)
+            elif to_type == "long64":
+                result = converter.to_long64(value, inverse=inverse)
+            elif to_type == "ulong64":
+                result = converter.to_ulong64(value, inverse=inverse)
             else:
                 return jsonify({"error": f"Unsupported to_type: {to_type}"}), 400
 
@@ -107,6 +116,20 @@ def convert_value():
             else:
                 return jsonify({"error": "uint32 can only convert to uint16"}), 400
 
+        # NEW: long64 support
+        elif from_type == "long64":
+            if to_type == "uint16":
+                result = converter.from_long64(int(value), inverse)
+            else:
+                return jsonify({"error": "long64 can only convert to uint16"}), 400
+
+        # NEW: ulong64 support
+        elif from_type == "ulong64":
+            if to_type == "uint16":
+                result = converter.from_ulong64(int(value), inverse)
+            else:
+                return jsonify({"error": "ulong64 can only convert to uint16"}), 400
+
         else:
             return jsonify({"error": f"Unsupported conversion: {from_type} → {to_type}"}), 400
 
@@ -119,4 +142,35 @@ def convert_value():
         })
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+
+# Optional: Get supported conversions
+@typeconverter.route('/api/supported-types', methods=['GET'])
+def get_supported_types():
+    """Returns all supported data types for conversion"""
+    return jsonify({
+        "types": [
+            "uint16",
+            "string",
+            "float32",
+            "double",
+            "int32",
+            "uint32",
+            "long64",
+            "ulong64"
+        ],
+        "endian_options": ["little", "big"],
+        "conversion_rules": {
+            "uint16": ["string", "float32", "double", "int32", "uint32", "long64", "ulong64"],
+            "string": ["uint16"],
+            "float32": ["uint16"],
+            "double": ["uint16"],
+            "int32": ["uint16"],
+            "uint32": ["uint16"],
+            "long64": ["uint16"],
+            "ulong64": ["uint16"]
+        }
+    })

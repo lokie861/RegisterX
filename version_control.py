@@ -369,36 +369,46 @@ def start_update_process(new_version: str):
     checksum_path = download_checksum_file(repo_url=REPO_DIR, save_dir=appdata_dir)
     if checksum_path is None:
         print("Failed to download checksum file.")
-        send_notification("RegisterX","Failed to download Updates. \nTry again later",timeout=2)
+        send_notification("RegisterX","Failed to download updates\nTry again later",timeout=5)
         delete_folder(appdata_dir)
         return
     
-    print("Downloading latest Installler...")
+    print("Downloading latest installer...")  # Fixed typo: "Installler" -> "installer"
     new_installer_path = download_latest_exe(repo_url=REPO_DIR,version=new_version,save_dir=appdata_dir)
-    # new_installer_path = os.path.join(appdata_dir,"RegisterX_Installer.exe")
     if new_installer_path is None:
         print("Failed to download the latest executable.")
-        send_notification("RegisterX","Failed to download Updates. \nTry again later",timeout=2)
+        send_notification("RegisterX","Failed to download updates\nTry again later",timeout=5)
+        delete_folder(appdata_dir)
+        return
+    
+    # BUG FIX: Verify downloaded version matches expected version
+    print("Verifying version...")
+    release_info = get_latest_release(REPO_DIR)
+    actual_version = release_info.get("name", "").lstrip("v")
+    if actual_version != new_version:
+        print(f"Version mismatch! Expected {new_version}, got {actual_version}")
+        send_notification("RegisterX", "Update version mismatch", timeout=5)
         delete_folder(appdata_dir)
         return
     
     print("Verifying checksum...")
     release_hash = get_sha_by_name("RegisterX_Installer.exe",checksum_path)
     if release_hash is None:
-        send_notification("RegisterX","Downloaded Hash varification failed \nTry again later",timeout=2)
+        send_notification("RegisterX","Downloaded hash verification failed\nTry again later",timeout=5)  # Fixed typo: "varification" -> "verification"
         delete_folder(appdata_dir)
         return
     
     try:
         print("Computing hash of downloaded file...")
         downloaded_hash = get_hash(new_installer_path, algorithm="sha256", prefer_certutil=True)
-        print(f"{release_hash}\n",downloaded_hash)
-        if release_hash == downloaded_hash:
+        print(f"Release hash: {release_hash}")
+        print(f"Downloaded hash: {downloaded_hash}")
+        
+        # BUG FIX #1: Case-insensitive hash comparison
+        if release_hash.lower() == downloaded_hash.lower():
             print("Hash verified. Update can proceed.")
             updater_path = os.path.join(os.getcwd(),"updater.exe")
-            args = [
-                    new_installer_path
-            ]
+            args = [new_installer_path]
 
             # Create startup info to hide window
             startupinfo = subprocess.STARTUPINFO()
@@ -411,17 +421,27 @@ def start_update_process(new_version: str):
                             creationflags=subprocess.CREATE_NO_WINDOW,  # prevent cmd window
                             capture_output=True,
                             text=True,
-                            timeout=60,
+                            timeout=120,  # Increased timeout from 60 to 120
                             check=False
                         )
             
+            # Note: Control won't return here if updater kills this process
+            
         else:
+            # BUG FIX #2: Proper error handling for hash mismatch
             print("Hash mismatch! Update aborted.")
+            print(f"Expected: {release_hash}")
+            print(f"Got: {downloaded_hash}")
+            send_notification("RegisterX", "Update verification failed - hash mismatch", timeout=5)
+            delete_folder(appdata_dir)
+            return
+            
     except Exception as e:
-        print(f"Error computing hash: {e}")
+        # BUG FIX #3: Notify user of exceptions
+        print(f"Error during update: {e}")
+        send_notification("RegisterX", f"Update failed: {str(e)}", timeout=5)
+        delete_folder(appdata_dir)
         return
-    
-
 
 # get_release_checksum("https://github.com/lokie861/RegisterX","checksum.txt")
 # print(download_latest_exe("https://github.com/lokie861/RegisterX"))

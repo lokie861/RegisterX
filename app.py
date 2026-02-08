@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -78,11 +77,15 @@ def ensure_single_instance():
         # ERROR_ALREADY_EXISTS = 183
         if last_error == 183:
             print("❌ Another instance of RegisterX.exe is already running.")
-            # on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
+            # BUG FIX: Don't call on_notify here - icon may be None
+            # if icon is not None:
+            #     on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
             sys.exit(1)
     except Exception as e:
         print(f"Error creating mutex: {e}")
-        # on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
+        # BUG FIX: Don't call on_notify here - icon may be None
+        # if icon is not None:
+        #     on_notify(icon=icon,item=None,title="RegisterX",message="Another instance is running.")
         sys.exit(1)
 
 
@@ -98,7 +101,9 @@ def update_application():
 
 def stop_flask():
     pid = os.getpid()
-    on_notify(icon=icon,item=None,title="RegisterX",message="Stopping RegisterX")
+    # BUG FIX: Check if icon exists before calling on_notify
+    if icon is not None:
+        on_notify(icon=icon,item=None,title="RegisterX",message="Stopping RegisterX")
     time.sleep(5)
     print(f"Stopping Flask server (PID {pid})...")
     os.kill(pid, signal.SIGTERM)  # or SIGINT
@@ -146,7 +151,11 @@ def stop_app(item):
 def on_notify(icon, item, title, message):
     global ICON_PATH
     """Display a system notification."""
-    icon.notify(title=title, message=message)
+    # Additional safety check (optional but recommended)
+    if icon is not None:
+        icon.notify(title=title, message=message)
+    else:
+        print(f"[NOTIFY] {title}: {message}")
 
 
 def open_app(icon, item):
@@ -226,9 +235,11 @@ if __name__ == '__main__':
 
     time.sleep(5)
 
-    
-
-    on_notify(icon=icon,item=None,title="RegisterX",message=f"Started RegisterX service on port {port}")
+    # BUG FIX: Check if icon exists before calling on_notify
+    if icon is not None:
+        on_notify(icon=icon,item=None,title="RegisterX",message=f"Started RegisterX service on port {port}")
+    else:
+        print(f"Started RegisterX service on port {port}")
     
     # Starts the Flask App
     app.run(host=CONFIG.get("host","0.0.0.0"),

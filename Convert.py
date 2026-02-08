@@ -128,8 +128,43 @@ PLC_MAPPINGS = {
 }
 
 
-def sv2(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
+# -------------------------------------
+#  Generic Conversion Function
+# -------------------------------------
+
+def convert_plc_address(plc_make: str, plc_model: str, plc_address: str, addr_type: str) -> tuple[str, str]:
+    """
+    Generic converter that works for all PLC types.
+    
+    Args:
+        plc_make: Manufacturer name (e.g., "Delta")
+        plc_model: Model name (e.g., "SV2", "ES2", "AS")
+        plc_address: PLC address (e.g., "D100", "X0.5")
+        addr_type: "bit" or "word"
+    
+    Returns:
+        Tuple of (raw_address, processed_address) as strings
+    """
+    
+    # Validate PLC make and model
+    if plc_make not in PLC_MAPPINGS:
+        return ("Unsupported PLC Make", "Unsupported PLC Make")
+    
+    if plc_model not in PLC_MAPPINGS[plc_make]:
+        return ("Unsupported PLC Model", "Unsupported PLC Model")
+    
+    model_mappings = PLC_MAPPINGS[plc_make][plc_model]
+    
+    # --- Handle AS series (multi-char prefixes like SM, SR, HC) ---
+    if plc_model == "AS":
+        return _convert_as_series(plc_address, addr_type, model_mappings)
+    
+    # --- Handle standard series (single-char prefixes) ---
+    return _convert_standard_series(plc_address, addr_type, model_mappings)
+
+
+def _convert_standard_series(plc_address: str, addr_type: str, model_mappings: dict) -> tuple[str, str]:
+    """Convert standard Delta PLC addresses (SV2, ES2, EX2, SS2, SE, SA2, SX2)"""
     
     reg_type = plc_address[0].upper()
     try:
@@ -137,7 +172,7 @@ def sv2(plc_address: str, addr_type: str) -> tuple[str, str]:
     except ValueError:
         return ("Invalid Address", "Invalid Address")
     
-    maps = PLC_MAPPINGS["Delta"]["SV2"].get(reg_type, {}).get(addr_type, {})
+    maps = model_mappings.get(reg_type, {}).get(addr_type, {})
     if not maps:
         return ("Unsupported Register Type", "Unsupported Register Type")
 
@@ -150,241 +185,17 @@ def sv2(plc_address: str, addr_type: str) -> tuple[str, str]:
     if raw_address is None:
         return ("Unsupported Address Range", "Unsupported Address Range")
 
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
+    # Apply processing rules
+    processed_address = _apply_processing_rules(reg_type, addr_type, raw_address)
+    
     return str(raw_address), str(processed_address)
 
 
-
-def es2(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
+def _convert_as_series(plc_address: str, addr_type: str, model_mappings: dict) -> tuple[str, str]:
+    """Convert AS series addresses (supports multi-char prefixes like SM, SR, HC)"""
     
-    reg_type = plc_address[0].upper()
-    try:
-        reg_address = int(plc_address[1:])
-    except ValueError:
-        return ("Invalid Address", "Invalid Address")
-    
-    maps = PLC_MAPPINGS["Delta"]["ES2"].get(reg_type, {}).get(addr_type, {})
-    if not maps:
-        return ("Unsupported Register Type", "Unsupported Register Type")
-
-    raw_address = None
-    for start, end, modbus_start in maps:
-        if start <= reg_address <= end:
-            raw_address = modbus_start + (reg_address - start)
-            break
-
-    if raw_address is None:
-        return ("Unsupported Address Range", "Unsupported Address Range")
-
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
-    return str(raw_address), str(processed_address)
-
-
-
-def ex2(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
-    
-    reg_type = plc_address[0].upper()
-    try:
-        reg_address = int(plc_address[1:])
-    except ValueError:
-        return ("Invalid Address", "Invalid Address")
-    
-    maps = PLC_MAPPINGS["Delta"]["EX2"].get(reg_type, {}).get(addr_type, {})
-    if not maps:
-        return ("Unsupported Register Type", "Unsupported Register Type")
-
-    raw_address = None
-    for start, end, modbus_start in maps:
-        if start <= reg_address <= end:
-            raw_address = modbus_start + (reg_address - start)
-            break
-
-    if raw_address is None:
-        return ("Unsupported Address Range", "Unsupported Address Range")
-
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
-    return str(raw_address), str(processed_address)
-
-
-
-def ss2(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
-    
-    reg_type = plc_address[0].upper()
-    try:
-        reg_address = int(plc_address[1:])
-    except ValueError:
-        return ("Invalid Address", "Invalid Address")
-    
-    maps = PLC_MAPPINGS["Delta"]["SS2"].get(reg_type, {}).get(addr_type, {})
-    if not maps:
-        return ("Unsupported Register Type", "Unsupported Register Type")
-
-    raw_address = None
-    for start, end, modbus_start in maps:
-        if start <= reg_address <= end:
-            raw_address = modbus_start + (reg_address - start)
-            break
-
-    if raw_address is None:
-        return ("Unsupported Address Range", "Unsupported Address Range")
-
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
-    return str(raw_address), str(processed_address)
-
-
-
-def se(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
-    
-    reg_type = plc_address[0].upper()
-    try:
-        reg_address = int(plc_address[1:])
-    except ValueError:
-        return ("Invalid Address", "Invalid Address")
-    
-    maps = PLC_MAPPINGS["Delta"]["SE"].get(reg_type, {}).get(addr_type, {})
-    if not maps:
-        return ("Unsupported Register Type", "Unsupported Register Type")
-
-    raw_address = None
-    for start, end, modbus_start in maps:
-        if start <= reg_address <= end:
-            raw_address = modbus_start + (reg_address - start)
-            break
-
-    if raw_address is None:
-        return ("Unsupported Address Range", "Unsupported Address Range")
-
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
-    return str(raw_address), str(processed_address)
-
-
-
-def sa2(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
-    
-    reg_type = plc_address[0].upper()
-    try:
-        reg_address = int(plc_address[1:])
-    except ValueError:
-        return ("Invalid Address", "Invalid Address")
-    
-    maps = PLC_MAPPINGS["Delta"]["SA2"].get(reg_type, {}).get(addr_type, {})
-    if not maps:
-        return ("Unsupported Register Type", "Unsupported Register Type")
-
-    raw_address = None
-    for start, end, modbus_start in maps:
-        if start <= reg_address <= end:
-            raw_address = modbus_start + (reg_address - start)
-            break
-
-    if raw_address is None:
-        return ("Unsupported Address Range", "Unsupported Address Range")
-
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
-    return str(raw_address), str(processed_address)
-
-
-
-def sx2(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
-    
-    reg_type = plc_address[0].upper()
-    try:
-        reg_address = int(plc_address[1:])
-    except ValueError:
-        return ("Invalid Address", "Invalid Address")
-    
-    maps = PLC_MAPPINGS["Delta"]["SX2"].get(reg_type, {}).get(addr_type, {})
-    if not maps:
-        return ("Unsupported Register Type", "Unsupported Register Type")
-
-    raw_address = None
-    for start, end, modbus_start in maps:
-        if start <= reg_address <= end:
-            raw_address = modbus_start + (reg_address - start)
-            break
-
-    if raw_address is None:
-        return ("Unsupported Address Range", "Unsupported Address Range")
-
-    # Processing rules for specific register types
-    if reg_type == "D" or addr_type == "word":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type == "X":
-        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
-    elif reg_type in {"M", "S", "T", "Y"}:
-        processed_address = raw_address - 1
-    else:
-        processed_address = raw_address
-
-    return str(raw_address), str(processed_address)
-
-
-
-def as_series(plc_address: str, addr_type: str) -> tuple[str, str]:
-    global PLC_MAPPINGS
-    
-    # --- Find the correct register type (supports multi-char like SM, SR, HC) ---
-    possible_types = sorted(PLC_MAPPINGS["Delta"]["AS"].keys(), key=len, reverse=True)
+    # Find the correct register type (longest match first)
+    possible_types = sorted(model_mappings.keys(), key=len, reverse=True)
     reg_type = next((t for t in possible_types if plc_address.upper().startswith(t)), None)
     if not reg_type:
         return ("Unsupported Register Type", "Unsupported Register Type")
@@ -396,7 +207,7 @@ def as_series(plc_address: str, addr_type: str) -> tuple[str, str]:
     except ValueError:
         return ("Invalid Address", "Invalid Address")
     
-    maps = PLC_MAPPINGS["Delta"]["AS"].get(reg_type, {}).get(addr_type, {})
+    maps = model_mappings.get(reg_type, {}).get(addr_type, {})
     if not maps:
         return ("Unsupported Register Type", "Unsupported Register Type")
 
@@ -404,6 +215,7 @@ def as_series(plc_address: str, addr_type: str) -> tuple[str, str]:
     for start, end, modbus_start in maps:
         if start <= reg_address <= end:
             if isinstance(reg_address, float):
+                # Handle bit addressing (e.g., X0.15)
                 base = int(reg_address)
                 bit = int(round((reg_address - base) * 100))  # handles .0–.15
                 raw_address = modbus_start + base * 16 + bit
@@ -414,28 +226,90 @@ def as_series(plc_address: str, addr_type: str) -> tuple[str, str]:
     if raw_address is None:
         return ("Unsupported Address Range", "Unsupported Address Range")
 
-    # Processing rules
+    # Apply AS-specific processing rules
+    processed_address = _apply_as_processing_rules(reg_type, addr_type, raw_address)
+    
+    return str(raw_address), str(processed_address)
+
+
+def _apply_processing_rules(reg_type: str, addr_type: str, raw_address: int) -> int:
+    """Apply standard processing rules for most Delta PLCs"""
+    
+    if reg_type == "D" or addr_type == "word":
+        # Remove leading '4' and subtract 1
+        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
+    elif reg_type == "X":
+        # Remove leading '1' and subtract 1
+        processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
+    elif reg_type in {"M", "S", "T", "Y"}:
+        # Subtract 1
+        processed_address = raw_address - 1
+    else:
+        processed_address = raw_address
+    
+    return processed_address
+
+
+def _apply_as_processing_rules(reg_type: str, addr_type: str, raw_address: int) -> int:
+    """Apply AS series specific processing rules"""
+    
     if reg_type == "D" or addr_type == "word":
         processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
-    elif reg_type in {"X"}:
+    elif reg_type == "X":
         if addr_type == "bit":
             processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
         elif addr_type == "word":
             processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("3") else raw_address - 1
         else:
             processed_address = raw_address - 1
-    
-    elif reg_type in {"Y"}:
+    elif reg_type == "Y":
         if addr_type == "bit":
             processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("1") else raw_address - 1
         elif addr_type == "word":
             processed_address = int(str(raw_address)[1:]) - 1 if str(raw_address).startswith("4") else raw_address - 1
         else:
             processed_address = raw_address - 1
-
-    elif reg_type in {"M", "S", "T", "SM", "SR", "HC"}:
+    elif reg_type in {"M", "S", "T", "SM", "SR", "HC", "C"}:
         processed_address = raw_address - 1
     else:
         processed_address = raw_address
+    
+    return processed_address
 
-    return str(raw_address), str(processed_address)
+
+# -------------------------------------
+#  Backward Compatibility Functions
+#  (Keep existing function names for compatibility)
+# -------------------------------------
+
+def sv2(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for SV2"""
+    return convert_plc_address("Delta", "SV2", plc_address, addr_type)
+
+def es2(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for ES2"""
+    return convert_plc_address("Delta", "ES2", plc_address, addr_type)
+
+def ex2(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for EX2"""
+    return convert_plc_address("Delta", "EX2", plc_address, addr_type)
+
+def ss2(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for SS2"""
+    return convert_plc_address("Delta", "SS2", plc_address, addr_type)
+
+def se(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for SE"""
+    return convert_plc_address("Delta", "SE", plc_address, addr_type)
+
+def sa2(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for SA2"""
+    return convert_plc_address("Delta", "SA2", plc_address, addr_type)
+
+def sx2(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for SX2"""
+    return convert_plc_address("Delta", "SX2", plc_address, addr_type)
+
+def as_series(plc_address: str, addr_type: str) -> tuple[str, str]:
+    """Backward compatible wrapper for AS"""
+    return convert_plc_address("Delta", "AS", plc_address, addr_type)

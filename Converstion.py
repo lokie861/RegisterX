@@ -39,7 +39,7 @@ class TypeConversions():
 
     # === 64-bit LONG (signed) ===
     def to_long64(self, data: List[int], index: int = 0, inverse: bool = True) -> int:
-        return round(struct.unpack('>q', self.self._read_words(data, 4, index, inverse))[0],3)
+        return round(struct.unpack('>q', self._read_words(data, 4, index, inverse))[0],3)
 
 
     def from_long64(self, value: int, inverse: bool = True) -> List[int]:
