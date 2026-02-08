@@ -11,7 +11,7 @@ a = Analysis(
     ['D:\\Personal Projects\\RegisterX\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('D:\\Personal Projects\\RegisterX/Convert.py', '.'), ('D:\\Personal Projects\\RegisterX/Blueprints', 'Blueprints'), ('D:\\Personal Projects\\RegisterX/templates', 'templates'), ('D:\\Personal Projects\\RegisterX/static', 'static')],
+    datas=[('D:\\Personal Projects\\RegisterX/Convert.py', '.'), ('D:\\Personal Projects\\RegisterX/Converstion.py', '.'), ('D:\\Personal Projects\\RegisterX/version_control.py', '.'), ('D:\\Personal Projects\\RegisterX/Blueprints', 'Blueprints'), ('D:\\Personal Projects\\RegisterX/templates', 'templates'), ('D:\\Personal Projects\\RegisterX/static', 'static')],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

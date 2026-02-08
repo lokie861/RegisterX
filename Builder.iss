@@ -3,7 +3,7 @@
 ; App details
 PrivilegesRequired=admin
 AppName=RegisterX
-AppVersion=0.1.1
+AppVersion=0.2.2
 AppPublisher=Lokesh
 AppPublisherURL=https://github.com/lokie861
 AppSupportURL=mailto:plokesh23.01@gmail.com
