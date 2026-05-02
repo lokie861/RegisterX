@@ -13,6 +13,7 @@ from flask_cors import CORS
 import pystray
 
 from Blueprints.Converter_routes import convert_blueprint
+from Blueprints.Reverse_Converter_routes import reverse_convert_blueprint
 from Blueprints.Type_converter_routes import typeconverter
 from version_control import (
     get_latest_release, 
@@ -175,6 +176,7 @@ app.config['SECRET_KEY'] = 'RegisterX'
 CORS(app, supports_credentials=True)
 app.register_blueprint(convert_blueprint,url_prefix="/convert")
 app.register_blueprint(typeconverter,url_prefix="/typeconverter")
+app.register_blueprint(reverse_convert_blueprint, url_prefix="/reverse-convert")
 
 
 # -----------------------------
